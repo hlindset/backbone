@@ -47,6 +47,11 @@
   // the `$` variable.
   Backbone.$ = $;
 
+  //
+  if (typeof window !== 'undefined') {
+    Backbone.window = window;
+  }
+
   // Runs Backbone.js in *noConflict* mode, returning the `Backbone` variable
   // to its previous owner. Returns a reference to this Backbone object.
   Backbone.noConflict = function() {
@@ -1191,8 +1196,8 @@
   };
 
   var noXhrPatch =
-    typeof window !== 'undefined' && !!window.ActiveXObject &&
-      !(window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
+    typeof Backbone.window !== 'undefined' && !!Backbone.window.ActiveXObject &&
+      !(Backbone.window.XMLHttpRequest && (new XMLHttpRequest).dispatchEvent);
 
   // Map from CRUD to HTTP for our default `Backbone.sync` implementation.
   var methodMap = {
@@ -1322,9 +1327,9 @@
     _.bindAll(this, 'checkUrl');
 
     // Ensure that `History` can be used outside of the browser.
-    if (typeof window !== 'undefined') {
-      this.location = window.location;
-      this.history = window.history;
+    if (typeof Backbone.window !== 'undefined') {
+      this.location = Backbone.window.location;
+      this.history = Backbone.window.history;
     }
   };
 
@@ -1409,9 +1414,9 @@
       // Depending on whether we're using pushState or hashes, and whether
       // 'onhashchange' is supported, determine how we check the URL state.
       if (this._hasPushState) {
-        Backbone.$(window).on('popstate', this.checkUrl);
-      } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-        Backbone.$(window).on('hashchange', this.checkUrl);
+        Backbone.$(Backbone.window).on('popstate', this.checkUrl);
+      } else if (this._wantsHashChange && ('onhashchange' in Backbone.window) && !oldIE) {
+        Backbone.$(Backbone.window).on('hashchange', this.checkUrl);
       } else if (this._wantsHashChange) {
         this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
       }
@@ -1448,7 +1453,7 @@
     // Disable Backbone.history, perhaps temporarily. Not useful in a real app,
     // but possibly useful for unit testing Routers.
     stop: function() {
-      Backbone.$(window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
+      Backbone.$(Backbone.window).off('popstate', this.checkUrl).off('hashchange', this.checkUrl);
       if (this._checkUrlInterval) clearInterval(this._checkUrlInterval);
       History.started = false;
     },
